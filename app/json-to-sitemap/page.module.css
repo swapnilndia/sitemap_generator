@@ -32,8 +32,19 @@
 }
 
 .header {
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 40px;
+}
+
+.headerContent {
+  text-align: center;
+  flex: 1;
+}
+
+.headerActions {
+  flex-shrink: 0;
 }
 
 .header h1 {
@@ -148,6 +159,15 @@
     padding: 10px;
   }
   
+  .header {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .headerContent {
+    text-align: center;
+  }
+  
   .header h1 {
     font-size: 2rem;
   }
@@ -171,81 +191,48 @@
   }
 }
 
-.featureSelection {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 30px;
-  margin-bottom: 40px;
-}
-
-.featureCard {
-  background: white;
-  border-radius: 12px;
-  padding: 30px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  transition: transform 0.3s ease;
-}
-
-.featureCard:hover {
-  transform: translateY(-5px);
-}
-
-@media (prefers-color-scheme: dark) {
-  .featureCard {
-    background: #1a1a1a;
-    box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
-  }
-}
-
-.featureCard h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 15px;
-  color: var(--primary-color);
-}
-
-.featureCard p {
-  color: #666;
-  margin-bottom: 25px;
-  line-height: 1.6;
-}
-
-@media (prefers-color-scheme: dark) {
-  .featureCard p {
-    color: #ccc;
-  }
-}
-
-.featureActions {
+.loadingState {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 60px 20px;
+  text-align: center;
 }
 
-.featureButton {
-  padding: 15px 30px;
-  background: var(--primary-color);
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  display: inline-block;
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
-.featureButton:hover {
-  background: #0056b3;
-  transform: translateY(-2px);
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-@media (max-width: 768px) {
-  .featureSelection {
-    grid-template-columns: 1fr;
-    gap: 20px;
+.loadingState h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin: 0;
+}
+
+.loadingState p {
+  color: #666;
+  font-size: 1rem;
+  margin: 0;
+  max-width: 400px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .loadingState h3 {
+    color: #fff;
   }
   
-  .featureCard {
-    padding: 20px;
+  .loadingState p {
+    color: #ccc;
   }
 }

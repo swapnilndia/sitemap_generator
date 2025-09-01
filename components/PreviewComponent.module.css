@@ -1,0 +1,517 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.container h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--primary-color, #0070f3);
+  text-align: center;
+}
+
+.container p {
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.advancedSection {
+  margin-bottom: 30px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.toggleButton {
+  width: 100%;
+  padding: 15px 20px;
+  background: #f8f9fa;
+  border: none;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toggleButton:hover {
+  background: #e9ecef;
+}
+
+.advancedOptions {
+  padding: 20px;
+  background: white;
+  border-top: 1px solid #e0e0e0;
+}
+
+.optionGroup {
+  margin-bottom: 20px;
+}
+
+.optionLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.select {
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+}
+
+.numberInput {
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 1rem;
+  width: 120px;
+}
+
+.optionDescription {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 5px 0 0 0;
+  font-weight: normal;
+}
+
+.regenerateButton {
+  padding: 10px 20px;
+  background: var(--primary-color, #0070f3);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.regenerateButton:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.regenerateButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 40px;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--primary-color, #0070f3);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error {
+  margin: 20px 0;
+  padding: 15px;
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  color: #c33;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.errorIcon {
+  font-size: 1.2rem;
+}
+
+.previewResults {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.statisticsSection h3,
+.urlsSection h3,
+.exclusionsSection h3,
+.sampleDataSection h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.statItem {
+  text-align: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color, #0070f3);
+  margin-bottom: 5px;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.statPercentage {
+  font-size: 0.8rem;
+  color: #888;
+  font-weight: 500;
+}
+
+.urlsSection {
+  background: #f0f8ff;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #b3d9ff;
+}
+
+.urlList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.urlItem {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #d1ecf1;
+}
+
+.urlText {
+  margin-bottom: 5px;
+}
+
+.urlText code {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9rem;
+  color: #0c5460;
+  word-break: break-all;
+  background: #f8f9fa;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.urlMeta {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.exclusionsSection {
+  background: #fff3cd;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #ffeaa7;
+}
+
+.exclusionList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.exclusionItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #f39c12;
+}
+
+.exclusionIcon {
+  font-size: 1.1rem;
+}
+
+.sampleDataSection {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.dataTable {
+  overflow-x: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: white;
+}
+
+.tableHeader {
+  display: flex;
+  background: #f1f3f4;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.headerCell {
+  padding: 12px;
+  font-weight: 600;
+  color: #333;
+  border-right: 1px solid #e0e0e0;
+  min-width: 120px;
+  flex: 1;
+}
+
+.headerCell:last-child {
+  border-right: none;
+}
+
+.tableRow {
+  display: flex;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.dataCell {
+  padding: 12px;
+  color: #666;
+  border-right: 1px solid #f0f0f0;
+  min-width: 120px;
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.dataCell:last-child {
+  border-right: none;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.continueButton {
+  padding: 15px 30px;
+  background: var(--success-color, #28a745);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 250px;
+}
+
+.continueButton:hover {
+  background: #218838;
+  transform: translateY(-2px);
+}
+
+.actionNote {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+  text-align: center;
+  max-width: 400px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .container p {
+    color: #ccc;
+  }
+  
+  .advancedSection {
+    border-color: #555;
+  }
+  
+  .toggleButton {
+    background: #2a2a2a;
+    color: #fff;
+  }
+  
+  .toggleButton:hover {
+    background: #333;
+  }
+  
+  .advancedOptions {
+    background: #1a1a1a;
+    border-color: #555;
+  }
+  
+  .optionLabel,
+  .checkboxLabel {
+    color: #fff;
+  }
+  
+  .select,
+  .numberInput {
+    background: #333;
+    border-color: #555;
+    color: #fff;
+  }
+  
+  .optionDescription {
+    color: #ccc;
+  }
+  
+  .statisticsSection h3,
+  .urlsSection h3,
+  .exclusionsSection h3,
+  .sampleDataSection h3 {
+    color: #fff;
+  }
+  
+  .statItem {
+    background: #2a2a2a;
+    border-color: #555;
+  }
+  
+  .statLabel {
+    color: #ccc;
+  }
+  
+  .statPercentage {
+    color: #aaa;
+  }
+  
+  .urlsSection {
+    background: #1a1a2e;
+    border-color: #4a4a6a;
+  }
+  
+  .urlItem {
+    background: #333;
+    border-color: #555;
+  }
+  
+  .urlText code {
+    background: #444;
+    color: #4fc3f7;
+  }
+  
+  .urlMeta {
+    color: #ccc;
+  }
+  
+  .exclusionsSection {
+    background: #2a2a1a;
+    border-color: #4a4a2a;
+  }
+  
+  .exclusionItem {
+    background: #333;
+    border-color: #666;
+  }
+  
+  .sampleDataSection {
+    background: #2a2a2a;
+    border-color: #555;
+  }
+  
+  .dataTable {
+    border-color: #555;
+  }
+  
+  .tableHeader {
+    background: #333;
+    border-color: #555;
+  }
+  
+  .headerCell {
+    color: #fff;
+    border-color: #555;
+  }
+  
+  .tableRow {
+    border-color: #444;
+  }
+  
+  .dataCell {
+    color: #ccc;
+    border-color: #444;
+  }
+  
+  .actions {
+    border-color: #555;
+  }
+  
+  .actionNote {
+    color: #ccc;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dataTable {
+    font-size: 0.8rem;
+  }
+  
+  .headerCell,
+  .dataCell {
+    min-width: 100px;
+    padding: 8px;
+  }
+  
+  .urlText code {
+    font-size: 0.8rem;
+  }
+  
+  .continueButton {
+    min-width: 200px;
+  }
+}

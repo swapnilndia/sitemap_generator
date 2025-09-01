@@ -1,0 +1,349 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.container h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--primary-color, #0070f3);
+  text-align: center;
+}
+
+.container p {
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.summarySection {
+  background: #f0f8ff;
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid #b3d9ff;
+  margin-bottom: 30px;
+}
+
+.summarySection h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.summaryItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #d1ecf1;
+}
+
+.summaryLabel {
+  font-weight: 500;
+  color: #333;
+}
+
+.summaryValue {
+  font-weight: 600;
+  color: var(--primary-color, #0070f3);
+}
+
+.groupsSection {
+  margin-top: 20px;
+}
+
+.groupsSection h4 {
+  margin: 0 0 15px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.groupsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.groupItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 20px;
+  border: 1px solid #d1ecf1;
+  font-size: 0.9rem;
+}
+
+.groupName {
+  font-weight: 500;
+  color: #333;
+}
+
+.groupCount {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.configSection {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 30px;
+}
+
+.configSection h3 {
+  margin: 0 0 25px 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.configOption {
+  margin-bottom: 25px;
+}
+
+.configLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.numberInput {
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 1rem;
+  width: 150px;
+}
+
+.select {
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+  min-width: 250px;
+}
+
+.configDescription {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 8px 0 0 0;
+  line-height: 1.5;
+  font-weight: normal;
+}
+
+.estimateSection {
+  background: #e8f5e8;
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid #c3e6cb;
+  margin-bottom: 30px;
+}
+
+.estimateSection h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.2rem;
+  color: #333;
+  text-align: center;
+}
+
+.estimateGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.estimateItem {
+  text-align: center;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #d4edda;
+}
+
+.estimateValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--success-color, #28a745);
+  margin-bottom: 8px;
+}
+
+.estimateLabel {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.continueButton {
+  padding: 15px 30px;
+  background: var(--primary-color, #0070f3);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.continueButton:hover {
+  background: #0056b3;
+  transform: translateY(-2px);
+}
+
+.tips {
+  background: #fff9e6;
+  border: 1px solid #ffd700;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.tips h4 {
+  margin: 0 0 15px 0;
+  color: #b8860b;
+  font-size: 1rem;
+}
+
+.tips ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.tips li {
+  color: #666;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .container p {
+    color: #ccc;
+  }
+  
+  .summarySection {
+    background: #1a1a2e;
+    border-color: #4a4a6a;
+  }
+  
+  .summarySection h3,
+  .configSection h3,
+  .estimateSection h3 {
+    color: #fff;
+  }
+  
+  .summaryItem {
+    background: #333;
+    border-color: #555;
+  }
+  
+  .summaryLabel,
+  .groupName {
+    color: #fff;
+  }
+  
+  .groupCount {
+    color: #ccc;
+  }
+  
+  .groupItem {
+    background: #333;
+    border-color: #555;
+  }
+  
+  .configSection {
+    background: #2a2a2a;
+    border-color: #555;
+  }
+  
+  .configLabel {
+    color: #fff;
+  }
+  
+  .numberInput,
+  .select {
+    background: #333;
+    border-color: #555;
+    color: #fff;
+  }
+  
+  .configDescription {
+    color: #ccc;
+  }
+  
+  .estimateSection {
+    background: #1a2e1a;
+    border-color: #4a6a4a;
+  }
+  
+  .estimateItem {
+    background: #333;
+    border-color: #555;
+  }
+  
+  .estimateLabel {
+    color: #ccc;
+  }
+  
+  .tips {
+    background: #2a2a1a;
+    border-color: #4a4a2a;
+  }
+  
+  .tips h4 {
+    color: #ffd700;
+  }
+  
+  .tips li {
+    color: #ccc;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .summaryGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .summaryItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .estimateGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .select {
+    min-width: 100%;
+  }
+  
+  .groupsList {
+    justify-content: center;
+  }
+}
