@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import EnvironmentSelector from './EnvironmentSelector';
+import EnvironmentSelector from './EnvironmentSelector.jsx';
 import { generateUrlPattern } from '../lib/environments.js';
 import { setStoredUrlPattern, setIsCustomPattern, getSelectedEnvironment } from '../lib/sessionStorage.js';
 import styles from './URLPatternComponent.module.css';

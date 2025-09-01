@@ -80,7 +80,7 @@ describe('End-to-End User Workflow', () => {
       });
 
     // Import and render the main page component
-    const HomePage = (await import('../../app/page.js')).default;
+    const HomePage = (await import('../../app/page.jsx')).default;
     render(<HomePage />);
 
     // Step 1: File Upload
@@ -211,7 +211,7 @@ describe('End-to-End User Workflow', () => {
       });
 
     // Import and render the JSON to sitemap page
-    const JsonToSitemapPage = (await import('../../app/json-to-sitemap/page.js')).default;
+    const JsonToSitemapPage = (await import('../../app/json-to-sitemap/page.jsx')).default;
     render(<JsonToSitemapPage />);
 
     // Should automatically load conversion data and skip to configuration
@@ -254,7 +254,7 @@ describe('End-to-End User Workflow', () => {
     // Mock failed API response
     global.fetch.mockRejectedValueOnce(new Error('Network error'));
 
-    const HomePage = (await import('../../app/page.js')).default;
+    const HomePage = (await import('../../app/page.jsx')).default;
     render(<HomePage />);
 
     // Try to upload a file
@@ -282,7 +282,7 @@ describe('End-to-End User Workflow', () => {
     });
 
     // Render a component with HomeButton
-    const HomeButton = (await import('../../components/HomeButton.js')).default;
+    const HomeButton = (await import('../../components/HomeButton.jsx')).default;
     render(<HomeButton showConfirm={true} />);
 
     const homeButton = screen.getByText('Home');

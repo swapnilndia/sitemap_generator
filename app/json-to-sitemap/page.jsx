@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import JsonUploadComponent from '../../components/JsonUploadComponent';
-import SitemapConfigComponent from '../../components/SitemapConfigComponent';
-import SitemapPreviewComponent from '../../components/SitemapPreviewComponent';
-import SitemapGenerationComponent from '../../components/SitemapGenerationComponent';
-import HomeButton from '../../components/HomeButton';
+import JsonUploadComponent from '../../components/JsonUploadComponent.jsx';
+import SitemapConfigComponent from '../../components/SitemapConfigComponent.jsx';
+import SitemapPreviewComponent from '../../components/SitemapPreviewComponent.jsx';
+import SitemapGenerationComponent from '../../components/SitemapGenerationComponent.jsx';
+import HomeButton from '../../components/HomeButton.jsx';
 import styles from './page.module.css';
 
 export default function JsonToSitemap() {

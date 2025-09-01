@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import HomeButton from './HomeButton';
+import HomeButton from './HomeButton.jsx';
 import styles from './ConversionResultsComponent.module.css';
 
 export default function ConversionResultsComponent({ 

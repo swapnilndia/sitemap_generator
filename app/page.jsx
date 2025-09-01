@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import FileUploadComponent from '../components/FileUploadComponent';
-import ColumnMappingComponent from '../components/ColumnMappingComponent';
-import URLPatternComponent from '../components/URLPatternComponent';
-import PreviewComponent from '../components/PreviewComponent';
-import ConversionResultsComponent from '../components/ConversionResultsComponent';
+import FileUploadComponent from '../components/FileUploadComponent.jsx';
+import ColumnMappingComponent from '../components/ColumnMappingComponent.jsx';
+import URLPatternComponent from '../components/URLPatternComponent.jsx';
+import PreviewComponent from '../components/PreviewComponent.jsx';
+import ConversionResultsComponent from '../components/ConversionResultsComponent.jsx';
 import styles from "./page.module.css";
 
 export default function Home() {
