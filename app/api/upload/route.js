@@ -70,10 +70,11 @@ export async function POST(request) {
       sheetNames = excelValidation.sheetNames;
     }
 
-    // Store file buffer temporarily (in production, use proper storage)
+    // Store file buffer in both memory and persistent storage
     const fileId = Date.now().toString();
     global.fileStorage = global.fileStorage || new Map();
-    global.fileStorage.set(fileId, {
+    
+    const fileData = {
       buffer,
       fileType,
       fileName: file.name,
@@ -81,7 +82,25 @@ export async function POST(request) {
       rowCount,
       sheetNames,
       uploadedAt: new Date()
-    });
+    };
+    
+    // Store in memory for immediate access
+    global.fileStorage.set(fileId, fileData);
+    
+    // Also store persistently for deployed environments
+    try {
+      const { saveJsonFile } = await import('../../../lib/fileStorage.js');
+      const saveResult = await saveJsonFile(`upload_${fileId}`, fileData, {
+        fileName: file.name,
+        fileType: fileType
+      });
+      
+      if (!saveResult.success) {
+        console.warn(`Failed to save file ${fileId} persistently:`, saveResult.error);
+      }
+    } catch (error) {
+      console.warn(`Failed to save file ${fileId} persistently:`, error.message);
+    }
 
     return NextResponse.json({
       success: true,

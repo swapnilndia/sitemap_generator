@@ -15,7 +15,21 @@ export async function POST(request) {
 
     // Retrieve file data
     global.fileStorage = global.fileStorage || new Map();
-    const fileData = global.fileStorage.get(fileId);
+    let fileData = global.fileStorage.get(fileId);
+
+    // If not found in memory, try persistent storage
+    if (!fileData) {
+      try {
+        const { loadJsonFile } = await import('../../../lib/fileStorage.js');
+        const persistentResult = await loadJsonFile(`upload_${fileId}`);
+        
+        if (persistentResult.success) {
+          fileData = persistentResult.data;
+        }
+      } catch (error) {
+        console.warn('Failed to load file from persistent storage:', error.message);
+      }
+    }
 
     if (!fileData) {
       return NextResponse.json(

@@ -107,7 +107,11 @@ export async function GET(request) {
     if (downloadInfo.type === 'sitemap_file') {
       // Download single sitemap file
       const [jobId, fileName] = downloadInfo.id.split('/');
-      const SITEMAP_DIR = path.join(process.cwd(), 'temp', 'sitemaps');
+      // Use /tmp in deployment environments, fallback to local temp for development
+      const TEMP_DIR = process.env.NODE_ENV === 'production' 
+        ? '/tmp' 
+        : path.join(process.cwd(), 'temp');
+      const SITEMAP_DIR = path.join(TEMP_DIR, 'sitemaps');
       const filePath = path.join(SITEMAP_DIR, jobId, fileName);
       
       try {
@@ -131,7 +135,11 @@ export async function GET(request) {
     } else if (downloadInfo.type === 'sitemap_zip') {
       // Download ZIP file
       const jobId = downloadInfo.id;
-      const SITEMAP_DIR = path.join(process.cwd(), 'temp', 'sitemaps');
+      // Use /tmp in deployment environments, fallback to local temp for development
+      const TEMP_DIR = process.env.NODE_ENV === 'production' 
+        ? '/tmp' 
+        : path.join(process.cwd(), 'temp');
+      const SITEMAP_DIR = path.join(TEMP_DIR, 'sitemaps');
       
       // Find the ZIP file (it might have a timestamp in the name)
       try {
