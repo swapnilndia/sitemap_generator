@@ -8,7 +8,9 @@ export default function ConversionResultsComponent({
   fileId, 
   config, 
   onConversionComplete, 
-  conversionResult 
+  conversionResult,
+  isBatchMode = false,
+  batchData = null
 }) {
   const [isConverting, setIsConverting] = useState(false);
   const [error, setError] = useState('');
@@ -19,29 +21,54 @@ export default function ConversionResultsComponent({
     if (!result && fileId && config) {
       startConversion();
     }
-  }, [fileId, config]);
+  }, [fileId, config, isBatchMode, batchData]);
 
   const startConversion = async () => {
     setIsConverting(true);
     setError('');
 
     try {
-      const response = await fetch('/api/convert', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fileId,
-          config
-        }),
-      });
+      let response;
+      
+      if (isBatchMode) {
+        // Batch conversion
+        response = await fetch('/api/batch-convert', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            batchId: fileId, // In batch mode, fileId is actually batchId
+            config
+          }),
+        });
+      } else {
+        // Single file conversion
+        response = await fetch('/api/convert', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fileId,
+            config
+          }),
+        });
+      }
 
       const conversionResult = await response.json();
 
       if (conversionResult.success) {
         setResult(conversionResult);
-        setDownloadUrl(`/api/download/${conversionResult.conversionId}`);
+        
+        if (isBatchMode) {
+          // For batch mode, we don't set a single download URL
+          // Downloads will be handled by BatchResultsComponent
+          setDownloadUrl('');
+        } else {
+          setDownloadUrl(`/api/download/${conversionResult.conversionId}`);
+        }
+        
         onConversionComplete(conversionResult);
       } else {
         setError(conversionResult.error || 'Conversion failed');
@@ -101,14 +128,14 @@ export default function ConversionResultsComponent({
 
   return (
     <div className={styles.container}>
-      <h2>Conversion Results</h2>
+      <h2>{isBatchMode ? 'Batch Conversion Results' : 'Conversion Results'}</h2>
       
       {/* Converting State */}
       {isConverting && (
         <div className={styles.convertingState}>
           <div className={styles.spinner}></div>
-          <h3>Converting Your File...</h3>
-          <p>Processing all rows and generating JSON output. This may take a moment for large files.</p>
+          <h3>{isBatchMode ? 'Converting Your Files...' : 'Converting Your File...'}</h3>
+          <p>{isBatchMode ? 'Processing all files and generating JSON output. This may take a moment for large batches.' : 'Processing all rows and generating JSON output. This may take a moment for large files.'}</p>
           <div className={styles.progressBar}>
             <div className={styles.progressFill}></div>
           </div>
@@ -131,7 +158,7 @@ export default function ConversionResultsComponent({
       {result && !isConverting && !error && (
         <div className={styles.successState}>
           <div className={styles.successIcon}>✅</div>
-          <h3>Conversion Completed Successfully!</h3>
+          <h3>{isBatchMode ? 'Batch Conversion Completed Successfully!' : 'Conversion Completed Successfully!'}</h3>
           
           {/* Summary Statistics */}
           <div className={styles.summarySection}>
@@ -245,43 +272,61 @@ export default function ConversionResultsComponent({
           {/* Action Options Section */}
           <div className={styles.actionOptionsSection}>
             <h4>What would you like to do next?</h4>
-            <p>Choose how to proceed with your converted data</p>
+            <p>{isBatchMode ? 'Your batch has been converted successfully. Proceed to manage your files.' : 'Choose how to proceed with your converted data'}</p>
             
-            <div className={styles.actionGrid}>
-              <div className={styles.actionCard}>
-                <div className={styles.actionIcon}>📥</div>
-                <h5>Download JSON File</h5>
-                <p>Download the converted JSON data for later use or external processing</p>
+            {!isBatchMode && (
+              <div className={styles.actionGrid}>
+                <div className={styles.actionCard}>
+                  <div className={styles.actionIcon}>📥</div>
+                  <h5>Download JSON File</h5>
+                  <p>Download the converted JSON data for later use or external processing</p>
+                  <button 
+                    onClick={handleDownload}
+                    className={styles.downloadButton}
+                    disabled={!downloadUrl}
+                  >
+                    Download JSON
+                  </button>
+                </div>
+                
+                <div className={styles.actionCard}>
+                  <div className={styles.actionIcon}>🗺️</div>
+                  <h5>Generate Sitemap Files</h5>
+                  <p>Continue to create XML sitemap files directly from this data</p>
+                  <button 
+                    onClick={handleContinueToSitemap}
+                    className={styles.sitemapButton}
+                  >
+                    Create Sitemaps
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {isBatchMode && (
+              <div className={styles.batchActionCard}>
+                <div className={styles.actionIcon}>📁</div>
+                <h5>Manage Batch Results</h5>
+                <p>View individual file results, download files, and generate sitemaps</p>
                 <button 
-                  onClick={handleDownload}
-                  className={styles.downloadButton}
-                  disabled={!downloadUrl}
+                  onClick={() => onConversionComplete(result)}
+                  className={styles.continueButton}
                 >
-                  Download JSON
+                  Continue to Batch Results
                 </button>
               </div>
-              
-              <div className={styles.actionCard}>
-                <div className={styles.actionIcon}>🗺️</div>
-                <h5>Generate Sitemap Files</h5>
-                <p>Continue to create XML sitemap files directly from this data</p>
-                <button 
-                  onClick={handleContinueToSitemap}
-                  className={styles.sitemapButton}
-                >
-                  Create Sitemaps
-                </button>
-              </div>
-            </div>
+            )}
             
             <div className={styles.downloadInfo}>
-              <p>File contains {formatNumber(result.statistics.validUrls)} valid URL entries</p>
-              <p>Generated on {new Date(result.metadata.processedAt).toLocaleString()}</p>
+              <p>{isBatchMode ? `Batch contains ${formatNumber(result.statistics?.totalFiles || batchData?.files?.length || 0)} files with ${formatNumber(result.statistics?.validUrls || 0)} valid URL entries` : `File contains ${formatNumber(result.statistics.validUrls)} valid URL entries`}</p>
+              <p>Generated on {new Date(result.metadata?.processedAt || Date.now()).toLocaleString()}</p>
             </div>
             
-            <div className={styles.homeButtonContainer}>
-              <HomeButton />
-            </div>
+            {!isBatchMode && (
+              <div className={styles.homeButtonContainer}>
+                <HomeButton />
+              </div>
+            )}
           </div>
 
           {/* Next Steps */}

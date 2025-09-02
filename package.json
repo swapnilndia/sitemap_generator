@@ -9,7 +9,14 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "test:all": "node test/run-all-tests.js",
+    "test:batch": "vitest test/lib/batch*.test.js test/integration/batch*.test.js",
+    "test:performance": "vitest test/performance/batch*.test.js --reporter=verbose",
+    "test:api": "vitest test/api/batch*.test.js",
+    "test:integration": "vitest test/integration/batch*.test.js --reporter=verbose",
+    "test:components": "vitest test/components/**/*.test.jsx",
+    "test:lib": "vitest test/lib/**/*.test.js"
   },
   "dependencies": {
     "archiver": "^7.0.1",

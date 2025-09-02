@@ -1,184 +1,256 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
 import {
-  ensureTempDir,
-  cleanupOldFiles,
-  clearAllFiles,
-  saveJsonFile,
-  loadJsonFile,
-  fileExists,
-  getFileInfo
+  saveFile,
+  getFile,
+  deleteFile,
+  listFiles,
+  saveBatchFiles,
+  getBatchFiles,
+  deleteBatchFiles,
+  cleanupExpiredBatches,
+  getBatchMetadata,
+  updateBatchMetadata,
+  validateBatchStorage,
+  getBatchStorageStats
 } from '../../lib/fileStorage.js';
 
-const TEMP_DIR = path.join(process.cwd(), 'temp');
+// Mock fs operations
+vi.mock('fs/promises');
 
 describe('File Storage', () => {
-  beforeEach(async () => {
-    // Ensure clean state
-    await clearAllFiles();
+  const mockBatchId = 'batch_123_abc';
+  const mockFileId = 'file_123_test';
+  const mockFileData = Buffer.from('test file content');
+  const mockMetadata = {
+    originalName: 'test.xlsx',
+    size: 1000,
+    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    uploadedAt: new Date()
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  afterEach(async () => {
-    // Clean up after tests
-    await clearAllFiles();
-  });
-
-  describe('ensureTempDir', () => {
-    it('should create temp directory if it does not exist', async () => {
-      // Remove temp dir if it exists
-      try {
-        await fs.rmdir(TEMP_DIR, { recursive: true });
-      } catch {}
-
-      await ensureTempDir();
+  describe('Single File Operations', () => {
+    it('should save a file successfully', async () => {
+      fs.writeFile.mockResolvedValue();
+      fs.mkdir.mockResolvedValue();
       
-      const stats = await fs.stat(TEMP_DIR);
-      expect(stats.isDirectory()).toBe(true);
+      const result = await saveFile(mockFileId, mockFileData, mockMetadata);
+      
+      expect(result.success).toBe(true);
+      expect(result.filePath).toBeDefined();
+      expect(fs.writeFile).toHaveBeenCalled();
     });
 
-    it('should not fail if temp directory already exists', async () => {
-      await ensureTempDir();
-      await ensureTempDir(); // Should not throw
+    it('should handle save errors gracefully', async () => {
+      fs.writeFile.mockRejectedValue(new Error('Disk full'));
+      fs.mkdir.mockResolvedValue();
       
-      const stats = await fs.stat(TEMP_DIR);
-      expect(stats.isDirectory()).toBe(true);
+      const result = await saveFile(mockFileId, mockFileData, mockMetadata);
+      
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Disk full');
+    });
+
+    it('should retrieve a file successfully', async () => {
+      fs.readFile.mockResolvedValue(mockFileData);
+      fs.stat.mockResolvedValue({ size: 1000, mtime: new Date() });
+      
+      const result = await getFile(mockFileId);
+      
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(mockFileData);
+      expect(fs.readFile).toHaveBeenCalled();
+    });
+
+    it('should handle missing files', async () => {
+      fs.readFile.mockRejectedValue({ code: 'ENOENT' });
+      
+      const result = await getFile('nonexistent_file');
+      
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('not found');
+    });
+
+    it('should delete a file successfully', async () => {
+      fs.unlink.mockResolvedValue();
+      
+      const result = await deleteFile(mockFileId);
+      
+      expect(result.success).toBe(true);
+      expect(fs.unlink).toHaveBeenCalled();
     });
   });
 
-  describe('saveJsonFile and loadJsonFile', () => {
-    it('should save and load optimized JSON data correctly', async () => {
-      const fileId = 'test_conversion_123';
-      const mockJsonData = {
-        data: [
-          {
-            processed: {
-              url: 'https://example.com/page1',
-              lastmod: '2024-01-01',
-              changefreq: 'weekly',
-              priority: '0.8',
-              group: 'products',
-              excluded: false,
-              isDuplicate: false
-            }
-          },
-          {
-            processed: {
-              url: 'https://example.com/page2',
-              group: 'blog',
-              excluded: false,
-              isDuplicate: false
-            }
-          },
-          {
-            processed: {
-              excluded: true
-            }
-          }
-        ]
+  describe('Batch File Operations', () => {
+    const mockFiles = [
+      { fileId: 'file1', data: Buffer.from('content1'), metadata: { ...mockMetadata, originalName: 'file1.xlsx' } },
+      { fileId: 'file2', data: Buffer.from('content2'), metadata: { ...mockMetadata, originalName: 'file2.xlsx' } }
+    ];
+
+    it('should save multiple files in a batch', async () => {
+      fs.writeFile.mockResolvedValue();
+      fs.mkdir.mockResolvedValue();
+      
+      const result = await saveBatchFiles(mockBatchId, mockFiles);
+      
+      expect(result.success).toBe(true);
+      expect(result.savedFiles).toHaveLength(2);
+      expect(fs.writeFile).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle partial batch save failures', async () => {
+      fs.writeFile
+        .mockResolvedValueOnce() // First file succeeds
+        .mockRejectedValueOnce(new Error('Write failed')); // Second file fails
+      fs.mkdir.mockResolvedValue();
+      
+      const result = await saveBatchFiles(mockBatchId, mockFiles);
+      
+      expect(result.success).toBe(false);
+      expect(result.savedFiles).toHaveLength(1);
+      expect(result.failedFiles).toHaveLength(1);
+    });
+
+    it('should retrieve all files in a batch', async () => {
+      fs.readdir.mockResolvedValue(['file1_test.xlsx', 'file2_test.xlsx']);
+      fs.readFile.mockResolvedValue(mockFileData);
+      fs.stat.mockResolvedValue({ size: 1000, mtime: new Date() });
+      
+      const result = await getBatchFiles(mockBatchId);
+      
+      expect(result.success).toBe(true);
+      expect(result.files).toHaveLength(2);
+    });
+
+    it('should delete all files in a batch', async () => {
+      fs.readdir.mockResolvedValue(['file1_test.xlsx', 'file2_test.xlsx']);
+      fs.unlink.mockResolvedValue();
+      fs.rmdir.mockResolvedValue();
+      
+      const result = await deleteBatchFiles(mockBatchId);
+      
+      expect(result.success).toBe(true);
+      expect(result.deletedCount).toBe(2);
+      expect(fs.unlink).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('Batch Metadata Management', () => {
+    const mockBatchMetadata = {
+      batchId: mockBatchId,
+      totalFiles: 2,
+      totalSize: 2000,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+    };
+
+    it('should save and retrieve batch metadata', async () => {
+      fs.writeFile.mockResolvedValue();
+      fs.readFile.mockResolvedValue(JSON.stringify(mockBatchMetadata));
+      fs.mkdir.mockResolvedValue();
+      
+      const saveResult = await updateBatchMetadata(mockBatchId, mockBatchMetadata);
+      expect(saveResult.success).toBe(true);
+      
+      const getResult = await getBatchMetadata(mockBatchId);
+      expect(getResult.success).toBe(true);
+      expect(getResult.metadata.batchId).toBe(mockBatchId);
+    });
+
+    it('should handle missing metadata gracefully', async () => {
+      fs.readFile.mockRejectedValue({ code: 'ENOENT' });
+      
+      const result = await getBatchMetadata('nonexistent_batch');
+      
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('not found');
+    });
+  });
+
+  describe('Cleanup and Maintenance', () => {
+    it('should clean up expired batches', async () => {
+      const expiredBatch = {
+        batchId: 'expired_batch',
+        expiresAt: new Date(Date.now() - 1000) // Expired 1 second ago
       };
-
-      const config = { maxPerFile: 50000 };
       
-      // Save file
-      const saveResult = await saveJsonFile(fileId, mockJsonData, config);
-      expect(saveResult.success).toBe(true);
-      expect(saveResult.statistics.validUrls).toBe(2);
-      expect(saveResult.statistics.excludedUrls).toBe(1);
-
-      // Load file
-      const loadResult = await loadJsonFile(fileId);
-      expect(loadResult.success).toBe(true);
-      expect(loadResult.data.urls).toHaveLength(2);
-      expect(loadResult.data.urls[0].loc).toBe('https://example.com/page1');
-      expect(loadResult.data.urls[0].lastmod).toBe('2024-01-01');
-      expect(loadResult.data.urls[0].group).toBe('products');
-      expect(loadResult.data.metadata.fileId).toBe(fileId);
+      const activeBatch = {
+        batchId: 'active_batch',
+        expiresAt: new Date(Date.now() + 1000) // Expires in 1 second
+      };
+      
+      fs.readdir.mockResolvedValue(['expired_batch', 'active_batch']);
+      fs.readFile
+        .mockResolvedValueOnce(JSON.stringify(expiredBatch))
+        .mockResolvedValueOnce(JSON.stringify(activeBatch));
+      fs.unlink.mockResolvedValue();
+      fs.rmdir.mockResolvedValue();
+      
+      const result = await cleanupExpiredBatches();
+      
+      expect(result.success).toBe(true);
+      expect(result.cleanedBatches).toContain('expired_batch');
+      expect(result.cleanedBatches).not.toContain('active_batch');
     });
 
-    it('should handle empty data gracefully', async () => {
-      const fileId = 'test_empty_123';
-      const mockJsonData = { data: [] };
+    it('should validate batch storage integrity', async () => {
+      fs.readdir.mockResolvedValue(['batch1', 'batch2']);
+      fs.readFile.mockResolvedValue(JSON.stringify({ batchId: 'batch1' }));
+      fs.stat.mockResolvedValue({ size: 1000 });
       
-      const saveResult = await saveJsonFile(fileId, mockJsonData);
-      expect(saveResult.success).toBe(true);
-      expect(saveResult.statistics.validUrls).toBe(0);
-
-      const loadResult = await loadJsonFile(fileId);
-      expect(loadResult.success).toBe(true);
-      expect(loadResult.data.urls).toHaveLength(0);
+      const result = await validateBatchStorage();
+      
+      expect(result.success).toBe(true);
+      expect(result.validBatches).toBeDefined();
+      expect(result.issues).toBeDefined();
     });
 
-    it('should return error for non-existent file', async () => {
-      const loadResult = await loadJsonFile('non_existent_file');
-      expect(loadResult.success).toBe(false);
-      expect(loadResult.error).toBeDefined();
+    it('should provide storage statistics', async () => {
+      fs.readdir.mockResolvedValue(['batch1', 'batch2']);
+      fs.readFile.mockResolvedValue(JSON.stringify({ 
+        totalFiles: 5, 
+        totalSize: 10000,
+        createdAt: new Date()
+      }));
+      
+      const result = await getBatchStorageStats();
+      
+      expect(result.success).toBe(true);
+      expect(result.stats.totalBatches).toBe(2);
+      expect(result.stats.totalFiles).toBeDefined();
+      expect(result.stats.totalSize).toBeDefined();
     });
   });
 
-  describe('fileExists', () => {
-    it('should return true for existing file', async () => {
-      const fileId = 'test_exists_123';
-      const mockJsonData = { data: [] };
+  describe('Error Handling', () => {
+    it('should handle filesystem errors gracefully', async () => {
+      fs.writeFile.mockRejectedValue(new Error('Permission denied'));
       
-      await saveJsonFile(fileId, mockJsonData);
-      const exists = await fileExists(fileId);
-      expect(exists).toBe(true);
+      const result = await saveFile(mockFileId, mockFileData, mockMetadata);
+      
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Permission denied');
     });
 
-    it('should return false for non-existent file', async () => {
-      const exists = await fileExists('non_existent_file');
-      expect(exists).toBe(false);
-    });
-  });
-
-  describe('getFileInfo', () => {
-    it('should return file information for existing file', async () => {
-      const fileId = 'test_info_123';
-      const mockJsonData = { data: [] };
+    it('should handle invalid file paths', async () => {
+      const result = await saveFile('', mockFileData, mockMetadata);
       
-      await saveJsonFile(fileId, mockJsonData);
-      const info = await getFileInfo(fileId);
-      
-      expect(info.success).toBe(true);
-      expect(info.size).toBeGreaterThan(0);
-      expect(info.created).toBeInstanceOf(Date);
-      expect(info.modified).toBeInstanceOf(Date);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Invalid');
     });
 
-    it('should return error for non-existent file', async () => {
-      const info = await getFileInfo('non_existent_file');
-      expect(info.success).toBe(false);
-      expect(info.error).toBeDefined();
-    });
-  });
-
-  describe('clearAllFiles', () => {
-    it('should clear all files in temp directory', async () => {
-      // Create multiple files
-      await saveJsonFile('file1', { data: [] });
-      await saveJsonFile('file2', { data: [] });
-      await saveJsonFile('file3', { data: [] });
-
-      const clearResult = await clearAllFiles();
-      expect(clearResult.success).toBe(true);
-      expect(clearResult.filesCleared).toBe(3);
-
-      // Verify files are gone
-      expect(await fileExists('file1')).toBe(false);
-      expect(await fileExists('file2')).toBe(false);
-      expect(await fileExists('file3')).toBe(false);
-    });
-  });
-
-  describe('cleanupOldFiles', () => {
-    it('should not remove recent files', async () => {
-      const fileId = 'recent_file';
-      await saveJsonFile(fileId, { data: [] });
+    it('should handle corrupted metadata files', async () => {
+      fs.readFile.mockResolvedValue('invalid json');
       
-      await cleanupOldFiles();
+      const result = await getBatchMetadata(mockBatchId);
       
-      expect(await fileExists(fileId)).toBe(true);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('parse');
     });
   });
 });

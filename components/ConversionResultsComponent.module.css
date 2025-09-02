@@ -647,4 +647,53 @@
     margin-top: 20px;
     padding-top: 16px;
   }
+}/*
+ Batch Mode Styles */
+.batchActionCard {
+  background: #f0f8ff;
+  padding: 30px;
+  border-radius: 12px;
+  border: 2px solid #0070f3;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.batchActionCard .actionIcon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.batchActionCard h5 {
+  margin: 0 0 10px 0;
+  font-size: 1.4rem;
+  color: #0070f3;
+}
+
+.batchActionCard p {
+  margin: 0 0 20px 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.continueButton {
+  background: #0070f3;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.continueButton:hover {
+  background: #0051cc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 112, 243, 0.3);
+}
+
+.continueButton:active {
+  transform: translateY(0);
 }

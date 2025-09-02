@@ -7,7 +7,9 @@ export default function PreviewComponent({
   fileId, 
   config, 
   onPreviewComplete, 
-  onConfigChange 
+  onConfigChange,
+  isBatchMode = false,
+  batchData = null
 }) {
   const [previewData, setPreviewData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,15 +34,21 @@ export default function PreviewComponent({
     setError('');
 
     try {
-      const response = await fetch('/api/preview', {
+      const endpoint = isBatchMode ? '/api/batch-preview' : '/api/preview';
+      const requestBody = isBatchMode ? {
+        batchId: fileId,
+        config: { ...config, ...advancedConfig }
+      } : {
+        fileId,
+        config: { ...config, ...advancedConfig }
+      };
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          fileId,
-          config: { ...config, ...advancedConfig }
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const result = await response.json();
@@ -81,8 +89,8 @@ export default function PreviewComponent({
 
   return (
     <div className={styles.container}>
-      <h2>Preview Your URLs</h2>
-      <p>Review sample URLs and configure optional settings before full conversion</p>
+      <h2>{isBatchMode ? 'Preview Your Batch URLs' : 'Preview Your URLs'}</h2>
+      <p>{isBatchMode ? 'Review sample URLs from your batch files and configure optional settings before full conversion' : 'Review sample URLs and configure optional settings before full conversion'}</p>
 
       {/* Advanced Options */}
       <div className={styles.advancedSection}>
@@ -220,6 +228,27 @@ export default function PreviewComponent({
       {/* Preview Results */}
       {previewData && !isLoading && (
         <div className={styles.previewResults}>
+          {/* Batch Info */}
+          {isBatchMode && previewData.batchInfo && (
+            <div className={styles.batchInfoSection}>
+              <h3>Batch Information</h3>
+              <div className={styles.batchInfo}>
+                <div className={styles.batchInfoItem}>
+                  <span className={styles.batchInfoLabel}>Total Files:</span>
+                  <span className={styles.batchInfoValue}>{previewData.batchInfo.totalFiles}</span>
+                </div>
+                <div className={styles.batchInfoItem}>
+                  <span className={styles.batchInfoLabel}>Preview File:</span>
+                  <span className={styles.batchInfoValue}>{previewData.batchInfo.previewFile}</span>
+                </div>
+                <div className={styles.batchInfoItem}>
+                  <span className={styles.batchInfoLabel}>File Types:</span>
+                  <span className={styles.batchInfoValue}>{previewData.batchInfo.fileTypes.join(', ')}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Statistics */}
           <div className={styles.statisticsSection}>
             <h3>Preview Statistics</h3>
@@ -314,11 +343,14 @@ export default function PreviewComponent({
             onClick={handleContinue}
             className={styles.continueButton}
           >
-            Proceed with Full Conversion
+            {isBatchMode ? 'Proceed with Batch Conversion' : 'Proceed with Full Conversion'}
           </button>
           
           <p className={styles.actionNote}>
-            This preview shows a sample of your data. The full conversion will process all rows.
+            {isBatchMode 
+              ? 'This preview shows a sample from your first file. The batch conversion will process all files with the same configuration.'
+              : 'This preview shows a sample of your data. The full conversion will process all rows.'
+            }
           </p>
         </div>
       )}
