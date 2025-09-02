@@ -11,7 +11,21 @@ export async function GET(request, { params }) {
 
     // Retrieve sitemap data
     global.sitemapStorage = global.sitemapStorage || new Map();
-    const sitemapData = global.sitemapStorage.get(id);
+    let sitemapData = global.sitemapStorage.get(id);
+    
+    // If not found in memory, try persistent storage
+    if (!sitemapData) {
+      try {
+        const { loadJsonFile } = await import('../../../lib/fileStorage.js');
+        const persistentResult = await loadJsonFile(`sitemap_${id}`);
+        
+        if (persistentResult.success) {
+          sitemapData = persistentResult.data;
+        }
+      } catch (error) {
+        console.warn('Failed to load sitemap from persistent storage:', error.message);
+      }
+    }
     
     if (!sitemapData) {
       return NextResponse.json(

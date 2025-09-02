@@ -6,7 +6,20 @@ export async function GET(request, { params }) {
     const { id } = await params;
 
     // Load JSON data from file
-    const fileResult = await loadJsonFile(id);
+    let fileResult = await loadJsonFile(id);
+    
+    // If not found in persistent storage, try memory storage
+    if (!fileResult.success) {
+      global.conversionStorage = global.conversionStorage || new Map();
+      const memoryData = global.conversionStorage.get(id);
+      
+      if (memoryData) {
+        fileResult = {
+          success: true,
+          data: memoryData
+        };
+      }
+    }
     
     if (!fileResult.success) {
       return NextResponse.json(

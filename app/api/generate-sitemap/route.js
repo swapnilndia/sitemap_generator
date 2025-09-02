@@ -17,7 +17,20 @@ export async function POST(request) {
     }
 
     // Load JSON data from file
-    const fileResult = await loadJsonFile(fileId);
+    let fileResult = await loadJsonFile(fileId);
+    
+    // If not found in persistent storage, try memory storage
+    if (!fileResult.success) {
+      global.jsonStorage = global.jsonStorage || new Map();
+      const memoryData = global.jsonStorage.get(fileId);
+      
+      if (memoryData) {
+        fileResult = {
+          success: true,
+          data: memoryData.data
+        };
+      }
+    }
     
     if (!fileResult.success) {
       return NextResponse.json(
@@ -53,15 +66,34 @@ export async function POST(request) {
       };
     }
 
-    // Store generated files
+    // Store generated files in both memory and persistent storage
     const generationId = `sitemap_${Date.now()}`;
     global.sitemapStorage = global.sitemapStorage || new Map();
-    global.sitemapStorage.set(generationId, {
+    
+    const sitemapData = {
       files: sitemapFiles,
       index: sitemapIndex,
       statistics: processed.statistics,
       createdAt: new Date()
-    });
+    };
+    
+    // Store in memory for immediate access
+    global.sitemapStorage.set(generationId, sitemapData);
+    
+    // Also store persistently for deployed environments
+    try {
+      const { saveJsonFile } = await import('../../../lib/fileStorage.js');
+      const saveResult = await saveJsonFile(`sitemap_${generationId}`, sitemapData, {
+        type: 'sitemap',
+        generationId: generationId
+      });
+      
+      if (!saveResult.success) {
+        console.warn(`Failed to save sitemap ${generationId} persistently:`, saveResult.error);
+      }
+    } catch (error) {
+      console.warn(`Failed to save sitemap ${generationId} persistently:`, error.message);
+    }
 
     return NextResponse.json({
       success: true,

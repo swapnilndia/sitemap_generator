@@ -23,6 +23,15 @@ export default function BatchResultsComponent({
   const [filterBy, setFilterBy] = useState('all'); // all, completed, error, processing
   const [sitemapJobId, setSitemapJobId] = useState(null);
   const [sitemapGenerating, setSitemapGenerating] = useState(false);
+  const [hierarchicalSitemapJobId, setHierarchicalSitemapJobId] = useState(null);
+  const [hierarchicalSitemapGenerating, setHierarchicalSitemapGenerating] = useState(false);
+  const [showHierarchicalConfig, setShowHierarchicalConfig] = useState(false);
+  const [groupingConfig, setGroupingConfig] = useState({
+    strategy: 'file-based',
+    groupNames: {},
+    baseUrl: 'https://example.com',
+    indexFileName: 'sitemap.xml'
+  });
 
   // Fetch batch status
   const fetchBatchStatus = async () => {
@@ -243,6 +252,77 @@ export default function BatchResultsComponent({
     }
   };
 
+  // Handle hierarchical sitemap generation
+  const handleGenerateHierarchicalSitemaps = async () => {
+    if (!batchId || hierarchicalSitemapGenerating) return;
+    
+    setHierarchicalSitemapGenerating(true);
+    
+    try {
+      const response = await fetch('/api/batch-sitemap-generate-hierarchical', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          batchId,
+          sitemapConfig,
+          groupingConfig
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setHierarchicalSitemapJobId(result.jobId);
+        setShowHierarchicalConfig(false);
+        alert(`Hierarchical sitemap generation started! Job ID: ${result.jobId}`);
+      } else {
+        alert(`Generation failed: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Hierarchical sitemap generation error:', error);
+      alert('Generation failed: Network error');
+    } finally {
+      setHierarchicalSitemapGenerating(false);
+    }
+  };
+
+  // Handle hierarchical sitemap download
+  const handleDownloadHierarchicalSitemaps = async () => {
+    if (!hierarchicalSitemapJobId) return;
+    
+    try {
+      const response = await fetch('/api/batch-sitemap-hierarchical-download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          jobId: hierarchicalSitemapJobId
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Create download link
+        const downloadUrl = `/api/batch-sitemap-hierarchical-download?token=${result.downloadToken}`;
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = 'hierarchical_sitemaps.zip';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        alert(`Download failed: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('Download failed: Network error');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className={styles.container}>
@@ -381,12 +461,28 @@ export default function BatchResultsComponent({
                 {sitemapGenerating ? '⏳ Generating...' : '🗺️ Generate Sitemaps'}
               </button>
               
+              <button
+                onClick={() => setShowHierarchicalConfig(!showHierarchicalConfig)}
+                className={styles.secondaryButton}
+              >
+                🏗️ Hierarchical Sitemaps
+              </button>
+              
               {sitemapJobId && (
                 <button
                   onClick={handleDownloadSitemaps}
                   className={styles.successButton}
                 >
                   📥 Download All Sitemaps
+                </button>
+              )}
+              
+              {hierarchicalSitemapJobId && (
+                <button
+                  onClick={handleDownloadHierarchicalSitemaps}
+                  className={styles.successButton}
+                >
+                  📥 Download Hierarchical Sitemaps
                 </button>
               )}
             </>
@@ -409,6 +505,68 @@ export default function BatchResultsComponent({
           {showDetails ? 'Hide Details' : 'Show Details'}
         </button>
       </div>
+
+      {/* Hierarchical Sitemap Configuration */}
+      {showHierarchicalConfig && (
+        <div className={styles.hierarchicalConfig}>
+          <h3>🏗️ Hierarchical Sitemap Configuration</h3>
+          
+          <div className={styles.configSection}>
+            <label className={styles.configLabel}>
+              Grouping Strategy:
+              <select
+                value={groupingConfig.strategy}
+                onChange={(e) => setGroupingConfig(prev => ({ ...prev, strategy: e.target.value }))}
+                className={styles.configSelect}
+              >
+                <option value="file-based">File-based (each file = one group)</option>
+                <option value="manual">Manual (user-defined groups)</option>
+                <option value="column-based">Column-based (analyze file content)</option>
+                <option value="url-pattern">URL Pattern (analyze URL patterns)</option>
+              </select>
+            </label>
+            
+            <label className={styles.configLabel}>
+              Base URL:
+              <input
+                type="text"
+                value={groupingConfig.baseUrl}
+                onChange={(e) => setGroupingConfig(prev => ({ ...prev, baseUrl: e.target.value }))}
+                placeholder="https://example.com"
+                className={styles.configInput}
+              />
+            </label>
+            
+            <label className={styles.configLabel}>
+              Index File Name:
+              <input
+                type="text"
+                value={groupingConfig.indexFileName}
+                onChange={(e) => setGroupingConfig(prev => ({ ...prev, indexFileName: e.target.value }))}
+                placeholder="sitemap.xml"
+                className={styles.configInput}
+              />
+            </label>
+          </div>
+          
+          <div className={styles.configActions}>
+            <button
+              onClick={handleGenerateHierarchicalSitemaps}
+              disabled={hierarchicalSitemapGenerating}
+              className={styles.primaryButton}
+            >
+              {hierarchicalSitemapGenerating ? '⏳ Generating...' : '🚀 Generate Hierarchical Sitemaps'}
+            </button>
+            
+            <button
+              onClick={() => setShowHierarchicalConfig(false)}
+              className={styles.secondaryButton}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* File Details */}
       {showDetails && (

@@ -14,7 +14,20 @@ export async function POST(request) {
     }
 
     // Load JSON data from file
-    const fileResult = await loadJsonFile(fileId);
+    let fileResult = await loadJsonFile(fileId);
+    
+    // If not found in persistent storage, try memory storage
+    if (!fileResult.success) {
+      global.jsonStorage = global.jsonStorage || new Map();
+      const memoryData = global.jsonStorage.get(fileId);
+      
+      if (memoryData) {
+        fileResult = {
+          success: true,
+          data: memoryData.data
+        };
+      }
+    }
     
     if (!fileResult.success) {
       return NextResponse.json(

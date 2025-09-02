@@ -52,15 +52,34 @@ export async function POST(request) {
       );
     }
 
-    // Store JSON data temporarily
+    // Store JSON data in both memory and persistent storage
     const fileId = `json_${Date.now()}`;
     global.jsonStorage = global.jsonStorage || new Map();
-    global.jsonStorage.set(fileId, {
+    
+    const jsonFileData = {
       data: jsonData,
       fileName: file.name,
       uploadedAt: new Date(),
       validUrlCount: validation.validUrlCount
-    });
+    };
+    
+    // Store in memory for immediate access
+    global.jsonStorage.set(fileId, jsonFileData);
+    
+    // Also store persistently for deployed environments
+    try {
+      const { saveJsonFile } = await import('../../../lib/fileStorage.js');
+      const saveResult = await saveJsonFile(fileId, jsonFileData, {
+        fileName: file.name,
+        type: 'json'
+      });
+      
+      if (!saveResult.success) {
+        console.warn(`Failed to save JSON file ${fileId} persistently:`, saveResult.error);
+      }
+    } catch (error) {
+      console.warn(`Failed to save JSON file ${fileId} persistently:`, error.message);
+    }
 
     // Extract metadata for preview
     const metadata = jsonData.metadata || {};

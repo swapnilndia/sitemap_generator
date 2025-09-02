@@ -256,6 +256,60 @@
   transform: translateY(-1px);
 }
 
+/* Hierarchical Configuration */
+.hierarchicalConfig {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.hierarchicalConfig h3 {
+  color: #1e293b;
+  margin: 0 0 1.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.configSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.configLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.configSelect,
+.configInput {
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.configSelect:focus,
+.configInput:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.configActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
 .toggleButton {
   padding: 0.5rem 1rem;
   background: #6b7280;
