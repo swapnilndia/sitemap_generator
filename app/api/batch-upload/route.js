@@ -45,7 +45,7 @@ export async function POST(request) {
       }
     }
     
-    // Store files in global storage
+    // Initialize storage systems
     global.fileStorage = global.fileStorage || new Map();
     
     const uploadedFiles = [];
@@ -64,6 +64,9 @@ export async function POST(request) {
     
     // Create batch job to generate proper file IDs
     const batchJob = createBatchJob(tempFiles, config);
+    
+    // Import file storage functions for persistent storage
+    const { saveBatchFile } = await import('../../../lib/fileStorage.js');
     
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -96,15 +99,29 @@ export async function POST(request) {
         }
       }
       
-      // Store file data with the proper batch file ID
-      global.fileStorage.set(fileId, {
+      // Store file data in both memory and persistent storage
+      const fileData = {
         buffer,
         fileType,
         originalName: file.name,
         size: file.size,
         uploadedAt: new Date(),
         batchId: batchJob.batchId
-      });
+      };
+      
+      // Store in memory for immediate access
+      global.fileStorage.set(fileId, fileData);
+      
+      // Also store persistently for deployed environments
+      try {
+        const saveResult = await saveBatchFile(batchJob.batchId, fileId, fileData);
+        
+        if (!saveResult.success) {
+          console.warn(`Failed to save file ${fileId} persistently:`, saveResult.error);
+        }
+      } catch (error) {
+        console.warn(`Failed to save file ${fileId} persistently:`, error.message);
+      }
       
       uploadedFiles.push({
         fileId,

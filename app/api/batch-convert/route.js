@@ -54,6 +54,33 @@ export async function POST(request) {
       }
     }
     
+    // If no files found in memory, try persistent storage
+    if (batchFiles.length === 0) {
+      try {
+        const { getBatchFiles } = await import('../../../lib/fileStorage.js');
+        const persistentResult = await getBatchFiles(batchId);
+        
+        if (persistentResult.success && persistentResult.files.length > 0) {
+          // Load all files from persistent storage
+          const { loadBatchFile } = await import('../../../lib/fileStorage.js');
+          
+          for (const fileInfo of persistentResult.files) {
+            const fileResult = await loadBatchFile(batchId, fileInfo.fileId);
+            
+            if (fileResult.success) {
+              batchFiles.push({
+                fileId: fileInfo.fileId,
+                originalName: fileResult.file.originalName,
+                ...fileResult.file
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to load files from persistent storage:', error.message);
+      }
+    }
+    
     if (batchFiles.length === 0) {
       return NextResponse.json(
         { success: false, error: 'No files found for batch' },
