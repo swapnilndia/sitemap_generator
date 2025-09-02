@@ -63,7 +63,7 @@ describe('Batch Status API', () => {
   describe('GET /api/batch-status/[batchId]', () => {
     it('should return batch status successfully', async () => {
       const params = { batchId: 'batch_123_abc' };
-      const request = new NextRequest('http://localhost/api/batch-status/batch_123_abc');
+      const request = new NextRequest('https://example.com/api/batch-status/batch_123_abc');
 
       const response = await GET(request, { params });
       const data = await response.json();
@@ -84,7 +84,7 @@ describe('Batch Status API', () => {
       global.fileStorage.delete('batch_123_abc_file2_json');
 
       const params = { batchId: 'batch_123_abc' };
-      const request = new NextRequest('http://localhost/api/batch-status/batch_123_abc');
+      const request = new NextRequest('https://example.com/api/batch-status/batch_123_abc');
 
       const response = await GET(request, { params });
       const data = await response.json();
@@ -117,7 +117,7 @@ describe('Batch Status API', () => {
       global.fileStorage.clear();
 
       const params = { batchId: 'batch_123_abc' };
-      const request = new NextRequest('http://localhost/api/batch-status/batch_123_abc');
+      const request = new NextRequest('https://example.com/api/batch-status/batch_123_abc');
 
       const response = await GET(request, { params });
       const data = await response.json();
@@ -129,7 +129,7 @@ describe('Batch Status API', () => {
 
     it('should calculate progress correctly', async () => {
       const params = { batchId: 'batch_123_abc' };
-      const request = new NextRequest('http://localhost/api/batch-status/batch_123_abc');
+      const request = new NextRequest('https://example.com/api/batch-status/batch_123_abc');
 
       const response = await GET(request, { params });
       const data = await response.json();
@@ -144,7 +144,7 @@ describe('Batch Status API', () => {
 
     it('should include file details in response', async () => {
       const params = { batchId: 'batch_123_abc' };
-      const request = new NextRequest('http://localhost/api/batch-status/batch_123_abc');
+      const request = new NextRequest('https://example.com/api/batch-status/batch_123_abc');
 
       const response = await GET(request, { params });
       const data = await response.json();
@@ -173,7 +173,7 @@ describe('Batch Status API', () => {
       });
 
       const params = { batchId: 'batch_123_abc' };
-      const request = new NextRequest('http://localhost/api/batch-status/batch_123_abc');
+      const request = new NextRequest('https://example.com/api/batch-status/batch_123_abc');
 
       const response = await GET(request, { params });
       const data = await response.json();

@@ -44,7 +44,7 @@ describe('Batch Sitemap Generate API', () => {
 
   describe('POST /api/batch-sitemap-generate', () => {
     it('should generate sitemaps successfully', async () => {
-      const request = new NextRequest('http://localhost/api/batch-sitemap-generate', {
+      const request = new NextRequest('https://example.com/api/batch-sitemap-generate', {
         method: 'POST',
         body: JSON.stringify({
           batchId: 'batch_123_abc',
@@ -68,7 +68,7 @@ describe('Batch Sitemap Generate API', () => {
     });
 
     it('should use default sitemap config when not provided', async () => {
-      const request = new NextRequest('http://localhost/api/batch-sitemap-generate', {
+      const request = new NextRequest('https://example.com/api/batch-sitemap-generate', {
         method: 'POST',
         body: JSON.stringify({
           batchId: 'batch_123_abc'
@@ -95,7 +95,7 @@ describe('Batch Sitemap Generate API', () => {
     });
 
     it('should handle missing batch ID', async () => {
-      const request = new NextRequest('http://localhost/api/batch-sitemap-generate', {
+      const request = new NextRequest('https://example.com/api/batch-sitemap-generate', {
         method: 'POST',
         body: JSON.stringify({})
       });
@@ -111,7 +111,7 @@ describe('Batch Sitemap Generate API', () => {
     it('should handle batch with no converted files', async () => {
       global.fileStorage.clear();
 
-      const request = new NextRequest('http://localhost/api/batch-sitemap-generate', {
+      const request = new NextRequest('https://example.com/api/batch-sitemap-generate', {
         method: 'POST',
         body: JSON.stringify({
           batchId: 'batch_123_abc'
@@ -130,7 +130,7 @@ describe('Batch Sitemap Generate API', () => {
       const { generateBatchSitemaps } = await import('../../lib/batchSitemap.js');
       generateBatchSitemaps.mockRejectedValueOnce(new Error('Sitemap generation failed'));
 
-      const request = new NextRequest('http://localhost/api/batch-sitemap-generate', {
+      const request = new NextRequest('https://example.com/api/batch-sitemap-generate', {
         method: 'POST',
         body: JSON.stringify({
           batchId: 'batch_123_abc'
@@ -146,7 +146,7 @@ describe('Batch Sitemap Generate API', () => {
     });
 
     it('should handle different grouping configurations', async () => {
-      const request = new NextRequest('http://localhost/api/batch-sitemap-generate', {
+      const request = new NextRequest('https://example.com/api/batch-sitemap-generate', {
         method: 'POST',
         body: JSON.stringify({
           batchId: 'batch_123_abc',
@@ -212,7 +212,7 @@ describe('Batch Sitemap Generate API', () => {
         errors: []
       });
 
-      const request = new NextRequest('http://localhost/api/batch-sitemap-generate', {
+      const request = new NextRequest('https://example.com/api/batch-sitemap-generate', {
         method: 'POST',
         body: JSON.stringify({
           batchId: 'batch_123_abc'
@@ -250,7 +250,7 @@ describe('Batch Sitemap Generate API', () => {
         ]
       });
 
-      const request = new NextRequest('http://localhost/api/batch-sitemap-generate', {
+      const request = new NextRequest('https://example.com/api/batch-sitemap-generate', {
         method: 'POST',
         body: JSON.stringify({
           batchId: 'batch_123_abc'

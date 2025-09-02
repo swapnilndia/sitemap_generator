@@ -50,7 +50,7 @@ describe('Batch Convert API', () => {
 
   describe('POST /api/batch-convert', () => {
     it('should convert batch files successfully', async () => {
-      const request = new NextRequest('http://localhost/api/batch-convert', {
+      const request = new NextRequest('https://example.com/api/batch-convert', {
         method: 'POST',
         body: JSON.stringify({
           batchId: 'batch_123_abc',
@@ -77,7 +77,7 @@ describe('Batch Convert API', () => {
       const { isValidBatchId } = await import('../../lib/batchClient.js');
       isValidBatchId.mockReturnValueOnce(false);
 
-      const request = new NextRequest('http://localhost/api/batch-convert', {
+      const request = new NextRequest('https://example.com/api/batch-convert', {
         method: 'POST',
         body: JSON.stringify({
           batchId: 'invalid_batch_id'
@@ -93,7 +93,7 @@ describe('Batch Convert API', () => {
     });
 
     it('should handle missing batch ID', async () => {
-      const request = new NextRequest('http://localhost/api/batch-convert', {
+      const request = new NextRequest('https://example.com/api/batch-convert', {
         method: 'POST',
         body: JSON.stringify({})
       });
@@ -109,7 +109,7 @@ describe('Batch Convert API', () => {
     it('should handle batch with no files', async () => {
       global.fileStorage.clear();
 
-      const request = new NextRequest('http://localhost/api/batch-convert', {
+      const request = new NextRequest('https://example.com/api/batch-convert', {
         method: 'POST',
         body: JSON.stringify({
           batchId: 'batch_123_abc'
@@ -128,7 +128,7 @@ describe('Batch Convert API', () => {
       const { convertFileToJson } = await import('../../lib/jsonConverter.js');
       convertFileToJson.mockRejectedValueOnce(new Error('Conversion failed'));
 
-      const request = new NextRequest('http://localhost/api/batch-convert', {
+      const request = new NextRequest('https://example.com/api/batch-convert', {
         method: 'POST',
         body: JSON.stringify({
           batchId: 'batch_123_abc'
@@ -144,7 +144,7 @@ describe('Batch Convert API', () => {
     });
 
     it('should store converted JSON files with correct structure', async () => {
-      const request = new NextRequest('http://localhost/api/batch-convert', {
+      const request = new NextRequest('https://example.com/api/batch-convert', {
         method: 'POST',
         body: JSON.stringify({
           batchId: 'batch_123_abc'
@@ -176,7 +176,7 @@ describe('Batch Convert API', () => {
         batchId: 'batch_123_abc'
       });
 
-      const request = new NextRequest('http://localhost/api/batch-convert', {
+      const request = new NextRequest('https://example.com/api/batch-convert', {
         method: 'POST',
         body: JSON.stringify({
           batchId: 'batch_123_abc'
@@ -203,7 +203,7 @@ describe('Batch Convert API', () => {
           statistics: { totalRows: 1, validUrls: 1, invalidUrls: 0, excludedRows: 0 }
         });
 
-      const request = new NextRequest('http://localhost/api/batch-convert', {
+      const request = new NextRequest('https://example.com/api/batch-convert', {
         method: 'POST',
         body: JSON.stringify({
           batchId: 'batch_123_abc'

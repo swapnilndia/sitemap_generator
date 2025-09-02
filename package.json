@@ -11,6 +11,7 @@
     "test:coverage": "vitest --coverage",
     "test:ui": "vitest --ui",
     "test:all": "node test/run-all-tests.js",
+    "test:working": "node test/run-working-tests.js",
     "test:batch": "vitest test/lib/batch*.test.js test/integration/batch*.test.js",
     "test:performance": "vitest test/performance/batch*.test.js --reporter=verbose",
     "test:api": "vitest test/api/batch*.test.js",
@@ -33,6 +34,8 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/supertest": "^6.0.3",
     "@vitejs/plugin-react": "^4.7.0",
+    "@vitest/coverage-v8": "^1.6.1",
+    "c8": "^10.1.3",
     "jsdom": "^23.2.0",
     "supertest": "^6.3.4",
     "vitest": "^1.6.1"

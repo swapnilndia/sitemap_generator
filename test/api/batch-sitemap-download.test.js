@@ -46,7 +46,7 @@ describe('Batch Sitemap Download API', () => {
 
       generateDownloadUrl.mockReturnValue('download_token_123');
 
-      const request = new NextRequest('http://localhost/api/batch-sitemap-download', {
+      const request = new NextRequest('https://example.com/api/batch-sitemap-download', {
         method: 'POST',
         body: JSON.stringify({
           jobId: 'sitemap_job_123'
@@ -85,7 +85,7 @@ describe('Batch Sitemap Download API', () => {
 
       generateDownloadUrl.mockReturnValue('download_token_123');
 
-      const request = new NextRequest('http://localhost/api/batch-sitemap-download', {
+      const request = new NextRequest('https://example.com/api/batch-sitemap-download', {
         method: 'POST',
         body: JSON.stringify({
           jobId: 'sitemap_job_123',
@@ -104,7 +104,7 @@ describe('Batch Sitemap Download API', () => {
     });
 
     it('should handle missing job ID', async () => {
-      const request = new NextRequest('http://localhost/api/batch-sitemap-download', {
+      const request = new NextRequest('https://example.com/api/batch-sitemap-download', {
         method: 'POST',
         body: JSON.stringify({})
       });
@@ -131,7 +131,7 @@ describe('Batch Sitemap Download API', () => {
 
       generateDownloadUrl.mockReturnValue('download_token_123');
 
-      const request = new NextRequest('http://localhost/api/batch-sitemap-download', {
+      const request = new NextRequest('https://example.com/api/batch-sitemap-download', {
         method: 'POST',
         body: JSON.stringify({
           jobId: 'sitemap_job_123'
@@ -159,7 +159,7 @@ describe('Batch Sitemap Download API', () => {
         error: 'No sitemap files found'
       });
 
-      const request = new NextRequest('http://localhost/api/batch-sitemap-download', {
+      const request = new NextRequest('https://example.com/api/batch-sitemap-download', {
         method: 'POST',
         body: JSON.stringify({
           jobId: 'sitemap_job_123'
@@ -193,7 +193,7 @@ describe('Batch Sitemap Download API', () => {
         ]
       });
 
-      const request = new NextRequest('http://localhost/api/batch-sitemap-download', {
+      const request = new NextRequest('https://example.com/api/batch-sitemap-download', {
         method: 'POST',
         body: JSON.stringify({
           jobId: 'sitemap_job_123',
@@ -224,7 +224,7 @@ describe('Batch Sitemap Download API', () => {
       fs.readFile.mockResolvedValue(Buffer.from('mock zip content'));
       fs.stat.mockResolvedValue({ size: 1024 });
 
-      const request = new NextRequest('http://localhost/api/batch-sitemap-download?token=download_token_123');
+      const request = new NextRequest('https://example.com/api/batch-sitemap-download?token=download_token_123');
 
       const response = await GET(request);
 
@@ -244,7 +244,7 @@ describe('Batch Sitemap Download API', () => {
 
       fs.readFile.mockResolvedValue('<?xml version="1.0"?><urlset><url><loc>https://example.com</loc></url></urlset>');
 
-      const request = new NextRequest('http://localhost/api/batch-sitemap-download?token=download_token_123');
+      const request = new NextRequest('https://example.com/api/batch-sitemap-download?token=download_token_123');
 
       const response = await GET(request);
 
@@ -298,7 +298,7 @@ describe('Batch Sitemap Download API', () => {
       });
       fs.readFile.mockResolvedValue(Buffer.from('mock zip content'));
 
-      const request = new NextRequest('http://localhost/api/batch-sitemap-download?token=download_token_123');
+      const request = new NextRequest('https://example.com/api/batch-sitemap-download?token=download_token_123');
 
       const response = await GET(request);
 
@@ -317,7 +317,7 @@ describe('Batch Sitemap Download API', () => {
 
       fs.readFile.mockRejectedValue(new Error('ENOENT: no such file or directory'));
 
-      const request = new NextRequest('http://localhost/api/batch-sitemap-download?token=download_token_123');
+      const request = new NextRequest('https://example.com/api/batch-sitemap-download?token=download_token_123');
 
       const response = await GET(request);
       const data = await response.json();
@@ -335,7 +335,7 @@ describe('Batch Sitemap Download API', () => {
         id: 'some_id'
       });
 
-      const request = new NextRequest('http://localhost/api/batch-sitemap-download?token=download_token_123');
+      const request = new NextRequest('https://example.com/api/batch-sitemap-download?token=download_token_123');
 
       const response = await GET(request);
       const data = await response.json();

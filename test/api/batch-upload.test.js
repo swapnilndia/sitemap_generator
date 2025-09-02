@@ -40,7 +40,7 @@ describe('Batch Upload API', () => {
       formData.append('file1', new File(['url,title,description\nhttps://example.com/1,Test 1,Desc 1'], 'test1.csv', { type: 'text/csv' }));
       formData.append('file2', new File(['url,title,description\nhttps://example.com/2,Test 2,Desc 2'], 'test2.csv', { type: 'text/csv' }));
 
-      const request = new NextRequest('http://localhost/api/batch-upload', {
+      const request = new NextRequest('https://example.com/api/batch-upload', {
         method: 'POST',
         body: formData
       });
@@ -59,7 +59,7 @@ describe('Batch Upload API', () => {
       const formData = new FormData();
       formData.append('file1', new File(['mock excel content'], 'test1.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
 
-      const request = new NextRequest('http://localhost/api/batch-upload', {
+      const request = new NextRequest('https://example.com/api/batch-upload', {
         method: 'POST',
         body: formData
       });
@@ -75,7 +75,7 @@ describe('Batch Upload API', () => {
     it('should reject uploads without files', async () => {
       const formData = new FormData();
 
-      const request = new NextRequest('http://localhost/api/batch-upload', {
+      const request = new NextRequest('https://example.com/api/batch-upload', {
         method: 'POST',
         body: formData
       });
@@ -92,7 +92,7 @@ describe('Batch Upload API', () => {
       const formData = new FormData();
       formData.append('file1', new File(['content'], 'test.txt', { type: 'text/plain' }));
 
-      const request = new NextRequest('http://localhost/api/batch-upload', {
+      const request = new NextRequest('https://example.com/api/batch-upload', {
         method: 'POST',
         body: formData
       });
@@ -112,7 +112,7 @@ describe('Batch Upload API', () => {
       const formData = new FormData();
       formData.append('file1', new File(['content'], 'test1.csv', { type: 'text/csv' }));
 
-      const request = new NextRequest('http://localhost/api/batch-upload', {
+      const request = new NextRequest('https://example.com/api/batch-upload', {
         method: 'POST',
         body: formData
       });
@@ -130,7 +130,7 @@ describe('Batch Upload API', () => {
       formData.append('file1', new File(['url,title\nhttps://example.com/1,Test 1'], 'test1.csv', { type: 'text/csv' }));
       formData.append('file2', new File(['url,description\nhttps://example.com/2,Desc 2'], 'test2.csv', { type: 'text/csv' }));
 
-      const request = new NextRequest('http://localhost/api/batch-upload', {
+      const request = new NextRequest('https://example.com/api/batch-upload', {
         method: 'POST',
         body: formData
       });
@@ -152,7 +152,7 @@ describe('Batch Upload API', () => {
       const formData = new FormData();
       formData.append('file1', new File([largeContent], 'large.csv', { type: 'text/csv' }));
 
-      const request = new NextRequest('http://localhost/api/batch-upload', {
+      const request = new NextRequest('https://example.com/api/batch-upload', {
         method: 'POST',
         body: formData
       });

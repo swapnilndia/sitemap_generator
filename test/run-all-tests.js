@@ -64,7 +64,7 @@ function runTestSuite(suite) {
     const startTime = Date.now();
     
     // Run the test suite
-    execSync(`npx vitest run ${suite.pattern} --reporter=verbose`, {
+    execSync(`npx vitest run "${suite.pattern}" --reporter=verbose`, {
       stdio: 'inherit',
       cwd: process.cwd()
     });

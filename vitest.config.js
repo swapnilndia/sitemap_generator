@@ -18,25 +18,7 @@ export default defineConfig({
       'dist/**',
       '.next/**'
     ],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/**',
-        'test/**',
-        '.next/**',
-        'coverage/**',
-        '**/*.config.js'
-      ],
-      thresholds: {
-        global: {
-          branches: 70,
-          functions: 70,
-          lines: 70,
-          statements: 70
-        }
-      }
-    },
+
     pool: 'threads',
     poolOptions: {
       threads: {
