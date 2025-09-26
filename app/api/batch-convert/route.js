@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { queueBatch, getBatchStatus } from '../../../lib/batchQueue.js';
 import { createBatchJob, validateBatchConfig, isValidBatchId } from '../../../lib/batchProcessing.js';
 import { convertFileToJson } from '../../../lib/jsonConverter.js';
+import serverlessStorage from '../../../lib/serverlessStorage.js';
 
 export async function POST(request) {
   try {
@@ -37,48 +38,29 @@ export async function POST(request) {
       );
     }
     
-    // Get files from global storage
-    global.fileStorage = global.fileStorage || new Map();
-    
-    // Find all files for this batch
+    // Get files from serverless storage
     const batchFiles = [];
     
-    // Find all files for this batch directly from storage
-    for (const [fileId, fileData] of global.fileStorage.entries()) {
-      if (fileData.batchId === batchId) {
-        batchFiles.push({
-          fileId,
-          originalName: fileData.originalName,
-          ...fileData
-        });
-      }
-    }
-    
-    // If no files found in memory, try persistent storage
-    if (batchFiles.length === 0) {
-      try {
-        const { getBatchFiles } = await import('../../../lib/fileStorage.js');
-        const persistentResult = await getBatchFiles(batchId);
-        
-        if (persistentResult.success && persistentResult.files.length > 0) {
-          // Load all files from persistent storage
-          const { loadBatchFile } = await import('../../../lib/fileStorage.js');
+    try {
+      // Load batch metadata to get file list
+      const batchMetaResult = await serverlessStorage.loadFile(`batch_${batchId}`);
+      
+      if (batchMetaResult.success && batchMetaResult.data.files) {
+        // Load each file from storage
+        for (const fileInfo of batchMetaResult.data.files) {
+          const fileResult = await serverlessStorage.loadFile(fileInfo.fileId);
           
-          for (const fileInfo of persistentResult.files) {
-            const fileResult = await loadBatchFile(batchId, fileInfo.fileId);
-            
-            if (fileResult.success) {
-              batchFiles.push({
-                fileId: fileInfo.fileId,
-                originalName: fileResult.file.originalName,
-                ...fileResult.file
-              });
-            }
+          if (fileResult.success) {
+            batchFiles.push({
+              fileId: fileInfo.fileId,
+              originalName: fileInfo.originalName,
+              ...fileResult.data
+            });
           }
         }
-      } catch (error) {
-        console.warn('Failed to load files from persistent storage:', error.message);
       }
+    } catch (error) {
+      console.error('Failed to load batch files from storage:', error.message);
     }
     
     if (batchFiles.length === 0) {
@@ -102,24 +84,31 @@ export async function POST(request) {
       try {
         console.log(`Converting file ${file.originalName} (${file.fileType})...`);
         
+        // Convert base64 buffer back to Buffer for processing
+        const buffer = Buffer.from(file.buffer, 'base64');
+        
         // Convert file to JSON using the same logic as single file mode
         const conversionResult = await convertFileToJson(
-          file.buffer,
+          buffer,
           file.fileType,
           config
         );
         
         if (conversionResult.success) {
-          // Store converted JSON
+          // Store converted JSON in serverless storage
           const jsonFileId = `${file.fileId}_json`;
-          global.fileStorage.set(jsonFileId, {
+          await serverlessStorage.saveFile(jsonFileId, {
             jsonData: conversionResult.json,
             originalFileId: file.fileId,
             originalName: file.originalName,
             convertedAt: new Date(),
             config: config,
             stats: conversionResult.json.statistics,
-            batchId: batchId  // Add batch ID to JSON file
+            batchId: batchId
+          }, {
+            type: 'converted_json',
+            batchId: batchId,
+            originalFileId: file.fileId
           });
           
           // Accumulate statistics

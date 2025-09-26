@@ -4,6 +4,7 @@ import { validateBatchUploadConfig } from '../../../lib/batchProcessing.js';
 import { queueBatch } from '../../../lib/batchQueue.js';
 import { extractExcelHeaders } from '../../../lib/excel.js';
 import { extractCsvHeaders } from '../../../lib/csv.js';
+import serverlessStorage from '../../../lib/serverlessStorage.js';
 
 export async function POST(request) {
   try {
@@ -45,8 +46,7 @@ export async function POST(request) {
       }
     }
     
-    // Initialize storage systems
-    global.fileStorage = global.fileStorage || new Map();
+    // Initialize serverless storage
     
     const uploadedFiles = [];
     let batchHeaders = null;
@@ -64,9 +64,6 @@ export async function POST(request) {
     
     // Create batch job to generate proper file IDs
     const batchJob = createBatchJob(tempFiles, config);
-    
-    // Import file storage functions for persistent storage
-    const { saveBatchFile } = await import('../../../lib/fileStorage.js');
     
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -99,9 +96,9 @@ export async function POST(request) {
         }
       }
       
-      // Store file data in both memory and persistent storage
+      // Store file data in serverless storage
       const fileData = {
-        buffer,
+        buffer: buffer.toString('base64'), // Convert buffer to base64 for JSON storage
         fileType,
         originalName: file.name,
         size: file.size,
@@ -109,18 +106,20 @@ export async function POST(request) {
         batchId: batchJob.batchId
       };
       
-      // Store in memory for immediate access
-      global.fileStorage.set(fileId, fileData);
+      // Store file in serverless storage
+      const saveResult = await serverlessStorage.saveFile(fileId, fileData, {
+        type: 'batch_file',
+        batchId: batchJob.batchId,
+        originalName: file.name,
+        fileType: fileType
+      });
       
-      // Also store persistently for deployed environments
-      try {
-        const saveResult = await saveBatchFile(batchJob.batchId, fileId, fileData);
-        
-        if (!saveResult.success) {
-          console.warn(`Failed to save file ${fileId} persistently:`, saveResult.error);
-        }
-      } catch (error) {
-        console.warn(`Failed to save file ${fileId} persistently:`, error.message);
+      if (!saveResult.success) {
+        console.error(`Failed to save file ${fileId}:`, saveResult.error);
+        return NextResponse.json(
+          { success: false, error: `Failed to save file ${file.name}` },
+          { status: 500 }
+        );
       }
       
       uploadedFiles.push({
@@ -132,14 +131,24 @@ export async function POST(request) {
       });
     }
     
-    // Store batch job without starting processing
-    // Processing will start later when user clicks "Convert"
-    const { storeBatchJob } = await import('../../../lib/batchProcessing.js');
-    const storeResult = await storeBatchJob(batchJob);
+    // Store batch metadata in serverless storage
+    const batchMetadata = {
+      batchJob,
+      files: uploadedFiles,
+      headers: batchHeaders,
+      createdAt: new Date(),
+      status: 'uploaded'
+    };
     
-    if (!storeResult.success) {
+    const batchSaveResult = await serverlessStorage.saveFile(`batch_${batchJob.batchId}`, batchMetadata, {
+      type: 'batch_metadata',
+      batchId: batchJob.batchId,
+      fileCount: uploadedFiles.length
+    });
+    
+    if (!batchSaveResult.success) {
       return NextResponse.json(
-        { success: false, error: storeResult.error },
+        { success: false, error: 'Failed to save batch metadata' },
         { status: 500 }
       );
     }

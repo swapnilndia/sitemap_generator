@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { convertJsonToUrlGenerator, processJsonForSitemap } from '../../../lib/jsonToSitemap.js';
-import { loadJsonFile } from '../../../lib/fileStorage.js';
 import { create } from 'xmlbuilder2';
 import archiver from 'archiver';
 import { Readable } from 'stream';
+import serverlessStorage from '../../../lib/serverlessStorage.js';
 
 export async function POST(request) {
   try {
@@ -16,21 +16,8 @@ export async function POST(request) {
       );
     }
 
-    // Load JSON data from file
-    let fileResult = await loadJsonFile(fileId);
-    
-    // If not found in persistent storage, try memory storage
-    if (!fileResult.success) {
-      global.jsonStorage = global.jsonStorage || new Map();
-      const memoryData = global.jsonStorage.get(fileId);
-      
-      if (memoryData) {
-        fileResult = {
-          success: true,
-          data: memoryData.data
-        };
-      }
-    }
+    // Load JSON data from serverless storage
+    const fileResult = await serverlessStorage.loadFile(fileId);
     
     if (!fileResult.success) {
       return NextResponse.json(
@@ -66,9 +53,8 @@ export async function POST(request) {
       };
     }
 
-    // Store generated files in both memory and persistent storage
+    // Store generated files in serverless storage
     const generationId = `sitemap_${Date.now()}`;
-    global.sitemapStorage = global.sitemapStorage || new Map();
     
     const sitemapData = {
       files: sitemapFiles,
@@ -77,22 +63,19 @@ export async function POST(request) {
       createdAt: new Date()
     };
     
-    // Store in memory for immediate access
-    global.sitemapStorage.set(generationId, sitemapData);
+    // Store sitemap data in serverless storage
+    const saveResult = await serverlessStorage.saveFile(generationId, sitemapData, {
+      type: 'sitemap',
+      generationId: generationId,
+      fileCount: sitemapFiles.length,
+      hasIndex: !!sitemapIndex
+    });
     
-    // Also store persistently for deployed environments
-    try {
-      const { saveJsonFile } = await import('../../../lib/fileStorage.js');
-      const saveResult = await saveJsonFile(`sitemap_${generationId}`, sitemapData, {
-        type: 'sitemap',
-        generationId: generationId
-      });
-      
-      if (!saveResult.success) {
-        console.warn(`Failed to save sitemap ${generationId} persistently:`, saveResult.error);
-      }
-    } catch (error) {
-      console.warn(`Failed to save sitemap ${generationId} persistently:`, error.message);
+    if (!saveResult.success) {
+      return NextResponse.json(
+        { success: false, error: 'Failed to save sitemap data' },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({

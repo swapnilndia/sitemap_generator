@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { convertFileToJson } from '../../../lib/jsonConverter.js';
-import { saveJsonFile, cleanupOldFiles } from '../../../lib/fileStorage.js';
+import { cleanupOldFiles } from '../../../lib/fileStorage.js';
+import serverlessStorage from '../../../lib/serverlessStorage.js';
 
 export async function POST(request) {
   try {
@@ -13,35 +14,24 @@ export async function POST(request) {
       );
     }
 
-    // Retrieve file data
-    global.fileStorage = global.fileStorage || new Map();
-    let fileData = global.fileStorage.get(fileId);
-
-    // If not found in memory, try persistent storage
-    if (!fileData) {
-      try {
-        const { loadJsonFile } = await import('../../../lib/fileStorage.js');
-        const persistentResult = await loadJsonFile(`upload_${fileId}`);
-        
-        if (persistentResult.success) {
-          fileData = persistentResult.data;
-        }
-      } catch (error) {
-        console.warn('Failed to load file from persistent storage:', error.message);
-      }
-    }
-
-    if (!fileData) {
+    // Retrieve file data from serverless storage
+    const fileResult = await serverlessStorage.loadFile(fileId);
+    
+    if (!fileResult.success) {
       return NextResponse.json(
         { success: false, error: 'File not found or expired' },
         { status: 404 }
       );
     }
 
+    const fileData = fileResult.data;
     const { buffer, fileType } = fileData;
+    
+    // Convert base64 buffer back to Buffer for processing
+    const bufferObj = Buffer.from(buffer, 'base64');
 
     // Convert file to JSON
-    const conversionResult = await convertFileToJson(buffer, fileType, config);
+    const conversionResult = await convertFileToJson(bufferObj, fileType, config);
 
     if (!conversionResult.success) {
       return NextResponse.json(
@@ -51,12 +41,19 @@ export async function POST(request) {
     }
 
     // Clean up old files before saving new one
-    await cleanupOldFiles();
+    await serverlessStorage.cleanupOldFiles();
     
-    // Save optimized JSON to file
+    // Save optimized JSON to serverless storage
     const conversionId = `conversion_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     console.log('Saving conversion with ID:', conversionId);
-    const saveResult = await saveJsonFile(conversionId, conversionResult.json, config);
+    
+    const saveResult = await serverlessStorage.saveFile(conversionId, conversionResult.json, {
+      type: 'conversion',
+      originalFileId: fileId,
+      config: config,
+      statistics: conversionResult.json.statistics
+    });
+    
     console.log('Save result:', saveResult);
     
     if (!saveResult.success) {
@@ -66,20 +63,10 @@ export async function POST(request) {
       );
     }
 
-    // Store minimal metadata in memory for quick access
-    global.conversionStorage = global.conversionStorage || new Map();
-    global.conversionStorage.set(conversionId, {
-      fileId: conversionId,
-      config,
-      createdAt: new Date(),
-      statistics: saveResult.statistics,
-      filePath: saveResult.filePath
-    });
-
     return NextResponse.json({
       success: true,
       conversionId,
-      statistics: saveResult.statistics,
+      statistics: conversionResult.json.statistics,
       metadata: {
         createdAt: new Date().toISOString(),
         fileId: conversionId,

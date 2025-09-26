@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateFile } from '../../../lib/validate.js';
 import { extractCsvHeaders, validateCsvStructure } from '../../../lib/csv.js';
 import { extractExcelHeaders, validateExcelStructure } from '../../../lib/excel.js';
+import serverlessStorage from '../../../lib/serverlessStorage.js';
 
 export async function POST(request) {
   try {
@@ -70,12 +71,11 @@ export async function POST(request) {
       sheetNames = excelValidation.sheetNames;
     }
 
-    // Store file buffer in both memory and persistent storage
-    const fileId = Date.now().toString();
-    global.fileStorage = global.fileStorage || new Map();
+    // Store file buffer in serverless storage
+    const fileId = `upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     const fileData = {
-      buffer,
+      buffer: buffer.toString('base64'), // Convert buffer to base64 for JSON storage
       fileType,
       fileName: file.name,
       headers,
@@ -84,22 +84,19 @@ export async function POST(request) {
       uploadedAt: new Date()
     };
     
-    // Store in memory for immediate access
-    global.fileStorage.set(fileId, fileData);
+    // Store file in serverless storage
+    const saveResult = await serverlessStorage.saveFile(fileId, fileData, {
+      type: 'single_file',
+      fileName: file.name,
+      fileType: fileType,
+      rowCount: rowCount
+    });
     
-    // Also store persistently for deployed environments
-    try {
-      const { saveJsonFile } = await import('../../../lib/fileStorage.js');
-      const saveResult = await saveJsonFile(`upload_${fileId}`, fileData, {
-        fileName: file.name,
-        fileType: fileType
-      });
-      
-      if (!saveResult.success) {
-        console.warn(`Failed to save file ${fileId} persistently:`, saveResult.error);
-      }
-    } catch (error) {
-      console.warn(`Failed to save file ${fileId} persistently:`, error.message);
+    if (!saveResult.success) {
+      return NextResponse.json(
+        { success: false, error: 'Failed to save file' },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
